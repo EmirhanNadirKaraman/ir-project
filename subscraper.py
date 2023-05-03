@@ -1,7 +1,7 @@
 import json
 import os
 
-# !pip install google-api-python-client
+# pip install google-api-python-client
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -44,6 +44,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
