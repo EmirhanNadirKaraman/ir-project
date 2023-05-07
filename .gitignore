@@ -1,3 +1,7 @@
 ir_venv/
-
 .idea/
+__pycache__/
+
+config.py
+
+results.json
