@@ -148,8 +148,6 @@ class SubScraper:
 
 
     def get_results(self, max_days_old: int, channel_count: int) -> list[Video]:
-        """This function updates the results
-        """
         videos = []
 
         # create results.json if it doesn't exist

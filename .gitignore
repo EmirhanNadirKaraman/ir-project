@@ -2,6 +2,6 @@ ir_venv/
 .idea/
 __pycache__/
 
-config.py
+../config.py
 
 results.json
