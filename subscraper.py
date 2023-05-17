@@ -26,24 +26,31 @@ class Channel:
     def set_subscriber_count(self, count):
         self.subscriber_count = count
 
+    
+    def __str__(self):
+        return f'channel_id: {self.channel_id}\nsubscriber_count: {self.subscriber_count}'
+
 
 
 class Video:
-    def __init__(self, video_json, response_json):
-        self.video_json = video_json
-        self.response_json = response_json
-        self.stat_json = get_stat_from_response_json(self.response_json)
+    def __init__(self, video_cache, channel_cache):
+        self.video_cache = video_cache
+        self.channel_cache = channel_cache
+        self.stat_cache = self.get_stats()
 
         self.title = self.get_video_title()
         self.description = self.get_video_description()
-        self.view_count = get_view_count_from_video_json(self.video_json)
+        self.view_count = self.get_view_count()
 
         self.duration = self.get_video_duration()
         self.publish_date = self.get_video_publish_date()
         self.thumbnails = self.get_video_thumbnails()
 
-        self.video_id = self.video_json['videoId']
-        self.channel_id = get_channel_id_from_response_json(self.response_json)
+        self.tags = self.get_video_tags()
+        self.category = self.get_video_category()
+
+        self.video_id = self.get_video_id()
+        self.channel_id = self.get_channel_id()
 
 
     def __str__(self):
@@ -57,33 +64,58 @@ class Video:
     
 
     def get_video_title(self):
-        return self.video_json['title']['runs'][0]['text']
-
+        return self.video_cache['title']
+    
 
     def get_video_description(self):
-        return self.video_json['descriptionSnippet']['runs'][0]['text']
+        return self.video_cache['description']
+    
+
+    def get_view_count(self):
+        return self.video_cache['view_count']
     
 
     def get_video_duration(self):
-        return self.video_json['thumbnailOverlays'][0]['thumbnailOverlayTimeStatusRenderer']['text']['simpleText']
-
+        return self.video_cache['duration']
+    
 
     def get_video_publish_date(self):
-        return self.response_json['items'][0]['snippet']['publishedAt']
-
+        return self.video_cache['publish_date']
+    
 
     def get_video_thumbnails(self):
-        thumbnails = []
+        return self.video_cache['thumbnails']
+    
 
-        thumbnail_json = self.response_json['items'][0]['snippet']['thumbnails']
+    def get_video_tags(self):
+        return self.video_cache['tags']
+    
 
-        for element in thumbnail_json:
-            element = thumbnail_json[element]
-            thumbnails.append(Thumbnail(url=element['url'],
-                                        width=element['width'],
-                                        height=element['height']))
+    def get_video_category(self):
+        return self.video_cache['category']
+    
 
-        return thumbnails
+    def get_video_id(self):
+        return self.video_cache['video_id']
+    
+
+    def get_channel_id(self):
+        return self.channel_cache['channel_id']
+
+
+    def get_subscriber_count_of_video_owner(self):
+        return self.channel_cache['subscriber_count']
+
+
+    def get_stats(self):
+        youtube = authenticate()
+
+        info = youtube.channels().list(
+            part='statistics',
+            id=self.channel_cache['channel_id']
+        ).execute()
+
+        return info
 
 
 
@@ -110,46 +142,37 @@ class SubScraper:
                 
                 if video_id not in results:
                     response_json = get_video_info(video_json=video_json)
+
                     results.update({
                         video_id: {
-                            'video': video_json,
-                            'response': response_json,
-                            'stats': get_channel_stat_info(response_json)
+                            'video': {
+                                'title': get_video_title(video_json),
+                                'description': get_video_description(video_json),
+                                'duration': get_video_duration(video_json),
+                                'publish_date': get_video_publish_date(response_json),
+                                'thumbnails': get_video_thumbnails(response_json),
+                                'video_id': get_video_id(video_json),
+                                'view_count': get_view_count(video_json),
+                                'tags': get_video_tags(response_json),
+                                'category': get_video_category(response_json)
+                            },
+                            'channel': {
+                                'channel_id': get_channel_id(response_json),
+                                'channel_title': get_channel_title(response_json),
+                                'subscriber_count': get_subscriber_count_of_video_owner(channels=self.channels, 
+                                                                                        channel_json=response_json)
+                            }
                         }
                     })
 
-                    """results.update({
-                        video_id: {
-                            'video': {
-                                'title': video_json['title']['runs'][0]['text'],
-                                'description': video_json['descriptionSnippet']['runs'][0]['text'],
-                                'duration': video_json['thumbnailOverlays'][0]['thumbnailOverlayTimeStatusRenderer']
-                                            ['text']['simpleText'],
-                                'publish_date': response_json['items'][0]['snippet']['publishedAt'],
-                                'thumbnails': [Thumbnail(url=element['url'],
-                                                        width=element['width'],
-                                                        height=element['height']) 
-                                                        for element in response_json['items'][0]
-                                                        ['snippet']['thumbnails']],
-                                'video_id': video_json['videoId'],
-                                'view_count': get_view_count_from_video_json(video_json)
-                            },
-                            'channel': {
-                                'channel_id': response_json['items'][0]['snippet']['channelId'],
-                                'channel_title': response_json['items'][0]['snippet']['channelTitle'],
-                                'subscriber_count': get_subscriber_count_of_video_owner(channels=self.channels, 
-                                                                                        video=video_json)
-                            }
-                        },
-                    })"""
+                video_cache = results[video_id]['video']
+                channel_cache = results[video_id]['channel']
 
-                video_json = results[video_id]['video']
-                response_json = results[video_id]['response']
-                 
-                video = Video(video_json=video_json, response_json=response_json)
-                channel = get_channel_of_video(channels=self.channels, video=video)
+                video = Video(video_cache=video_cache, channel_cache=channel_cache)
+                channel_id = video.get_channel_id()
+                channel = get_channel_of_video(channels=self.channels, channel_id=channel_id)
 
-                channel.subscriber_count = get_subscriber_count_of_video_owner(channels=self.channels, video=video)
+                channel.subscriber_count = video.get_subscriber_count_of_video_owner()
 
                 publish_date = datetime.fromisoformat(video.publish_date.replace('Z', '+00:00'))
                 now = datetime.now(timezone.utc).astimezone()
@@ -180,8 +203,8 @@ class SubScraper:
         for video in videos: 
             result = results[video.video_id]
 
-            view_count = get_view_count_from_video_json(result['video'])
-            channel_sub_count = get_subscriber_count_from_json(result['stats'])
+            view_count = video.get_view_count()
+            channel_sub_count = video.get_subscriber_count_of_video_owner()
 
             views.append(view_count)
             channel_sub_counts.append(channel_sub_count)
@@ -211,17 +234,26 @@ class Thumbnail:
         self.width = width
         self.height = height
 
+
     def __str__(self):
         url = f'url: {self.url}'
         width = f'width: {self.width}'
         height = f'height: {self.height}'
 
         return '\n'.join([url, width, height])
+    
+
+    def to_json(self):
+        return {
+            'url': self.url, 
+            'width': self.width, 
+            'height': self.height
+        }
 
 
 def main():
     subscraper = SubScraper()
-    subscraper.plot_results(max_days_old=40, channel_count=1, no_of_bins=1000)
+    subscraper.plot_results(max_days_old=40, channel_count=1, no_of_bins=5)
 
 
 if __name__ == '__main__':
