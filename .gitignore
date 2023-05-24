@@ -3,4 +3,3 @@ ir_venv/
 __pycache__/
 
 config.py
-results.json
