@@ -3,3 +3,4 @@ ir_venv/
 __pycache__/
 
 config.py
+.vscode/
