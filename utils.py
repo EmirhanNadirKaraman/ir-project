@@ -141,11 +141,7 @@ def get_video_category(channel_json) -> str:
 
 
 def get_video_tags(channel_json) -> list[str]:
-<<<<<<< Updated upstream
-    return channel_json['items'][0]['snippet'].get('tags', None)
-=======
-    return channel_json["items"][0]["snippet"]["tags"]
->>>>>>> Stashed changes
+    return channel_json["items"][0]["snippet"].get("tags", None)
 
 
 def get_video_title(video_json):
@@ -187,8 +183,4 @@ def get_video_id(video_json) -> str:
 
 
 def get_channel_title(channel_json) -> str:
-<<<<<<< Updated upstream
-    return channel_json['items'][0]['snippet']['title']
-=======
     return channel_json["items"][0]["snippet"]["title"]
->>>>>>> Stashed changes
