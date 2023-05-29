@@ -168,18 +168,16 @@ def get_video_publish_date(channel_json):
     return channel_json['items'][0]['snippet']['publishedAt']
 
 
-def get_video_thumbnails(channel_json) -> list[Thumbnail]:
-    thumbnails = []
+def get_video_thumbnail(channel_json) -> list[Thumbnail]:
 
-    thumbnail_json = channel_json['items'][0]['snippet']['thumbnails']
+    default_res = channel_json['items'][0]['snippet']['thumbnails'].get('default', None)
+    max_res = channel_json['items'][0]['snippet']['thumbnails'].get('maxres', default_res)
 
-    for element in thumbnail_json:
-        element = thumbnail_json[element]
-        thumbnails.append(Thumbnail(url=element['url'],
-                                    width=element['width'],
-                                    height=element['height']).to_json())
+    thumbnail = Thumbnail(url=max_res['url'], 
+                          width=max_res['width'], 
+                          height=max_res['height']).to_json()
 
-    return thumbnails
+    return thumbnail
 
 
 def get_video_id(video_json) -> str:

@@ -32,7 +32,7 @@ class Video:
     def __init__(self, video_cache, channel_cache):
         self.video_cache = video_cache
         self.channel_cache = channel_cache
-        # self.stat_cache = self.get_stats()
+        self.stat_cache = self.get_stats()
 
         self.title = self.get_video_title()
         self.description = self.get_video_description()
@@ -40,7 +40,7 @@ class Video:
 
         self.duration = self.get_video_duration()
         self.publish_date = self.get_video_publish_date()
-        self.thumbnails = self.get_video_thumbnails()
+        self.thumbnails = self.get_video_thumbnail()
 
         self.tags = self.get_video_tags()
         self.category = self.get_video_category()
@@ -79,7 +79,7 @@ class Video:
         return self.video_cache['publish_date']
     
 
-    def get_video_thumbnails(self):
+    def get_video_thumbnail(self):
         return self.video_cache['thumbnails']
     
 
@@ -145,7 +145,7 @@ class SubScraper:
                                 'description': get_video_description(video_json),
                                 'duration': get_video_duration(video_json),
                                 'publish_date': get_video_publish_date(response_json),
-                                'thumbnails': get_video_thumbnails(response_json),
+                                'thumbnails': get_video_thumbnail(response_json),
                                 'video_id': get_video_id(video_json),
                                 'view_count': get_view_count(video_json),
                                 'tags': get_video_tags(response_json),
@@ -192,7 +192,7 @@ class SubScraper:
         views = []
         channel_sub_counts = []
 
-        with open('results.json', 'r') as f:
+        with open('videos.json', 'r') as f:
             results = json.loads(f.read())
             
         for video in videos: 
@@ -253,7 +253,7 @@ class Thumbnail:
 
 def main():
     subscraper = SubScraper()
-    subscraper.plot_results(max_days_old=100, channel_count=5, no_of_bins=5)
+    subscraper.plot_results(max_days_old=100, channel_count=20, no_of_bins=5)
 
 
 if __name__ == '__main__':
