@@ -5,13 +5,9 @@ import scrapetube
 import matplotlib.pyplot as plt
 
 # pip install google-api-python-client
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
-from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound, TranscriptsDisabled
-from config import set_values
 from datetime import datetime, timezone
-from math import tanh
+import math
 
 from utils import *
 
@@ -36,7 +32,7 @@ class Video:
     def __init__(self, video_cache, channel_cache):
         self.video_cache = video_cache
         self.channel_cache = channel_cache
-        self.stat_cache = self.get_stats()
+        # self.stat_cache = self.get_stats()
 
         self.title = self.get_video_title()
         self.description = self.get_video_description()
@@ -129,20 +125,19 @@ class SubScraper:
         videos = []
 
         # create results.json if it doesn't exist
-        if not os.path.exists('results.json'):
-            with open('results.json', 'w') as f:
+        if not os.path.exists('videos.json'):
+            with open('videos.json', 'w') as f:
                 f.write('{}')
 
-        with open('results.json', 'r') as f:
+        with open('videos.json', 'r') as f:
             results = json.loads(f.read())
 
         for channel_index, channel in enumerate(self.channels[:channel_count]):
             for video_index, video_json in enumerate(channel.videos):
                 video_id = video_json['videoId']
-                
+            
                 if video_id not in results:
                     response_json = get_video_info(video_json=video_json)
-
                     results.update({
                         video_id: {
                             'video': {
@@ -185,7 +180,7 @@ class SubScraper:
                 videos.append(video)
                 print(channel_index, video_index)
 
-        with open('results.json', 'w') as f:
+        with open('videos.json', 'w') as f:
             json.dump(results, f, indent=4)
 
         return videos
@@ -224,7 +219,12 @@ class SubScraper:
     def normalize(self, subscriber_count, mean):
         # print(subscriber_count, tanh(subscriber_count))
         # print(mean, tanh(mean))
-        return tanh(subscriber_count) / tanh(mean) * 0.5
+
+        result = math.log(subscriber_count + 2)
+        return result
+    
+        # return tanh(subscriber_count) / tanh(mean) * 0.5
+
 
 
 
@@ -253,7 +253,7 @@ class Thumbnail:
 
 def main():
     subscraper = SubScraper()
-    subscraper.plot_results(max_days_old=40, channel_count=1, no_of_bins=5)
+    subscraper.plot_results(max_days_old=100, channel_count=5, no_of_bins=5)
 
 
 if __name__ == '__main__':

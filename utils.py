@@ -1,9 +1,8 @@
 from config import set_values
-from subscraper import Thumbnail, Video, Channel
+from subscraper import Thumbnail, Channel
 import os
 
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
 
 
@@ -150,7 +149,7 @@ def get_video_category(channel_json) -> str:
 
 
 def get_video_tags(channel_json) -> list[str]:
-    return channel_json['items'][0]['snippet']['tags']
+    return channel_json['items'][0]['snippet'].get('tags', None)
 
 
 def get_video_title(video_json):
@@ -189,5 +188,3 @@ def get_video_id(video_json) -> str:
 
 def get_channel_title(channel_json) -> str:
     return channel_json['items'][0]['snippet']['title']
-
-
