@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import math
 
 from utils import *
+import eden_ai
 
 
 class Channel:
@@ -31,7 +32,7 @@ class Video:
     def __init__(self, video_cache, channel_cache):
         self.video_cache = video_cache
         self.channel_cache = channel_cache
-        self.stat_cache = self.get_stats()
+        # self.stat_cache = self.get_stats()
 
         self.title = self.get_video_title()
         self.description = self.get_video_description()
@@ -120,13 +121,15 @@ class SubScraper:
         with open("videos.json", "r") as f:
             results = json.loads(f.read())
 
-        for channel_index, channel in enumerate(self.channels[:channel_count]):
-            for video_index, video_json in enumerate(channel.videos):
+        index = 1
+
+        for channel in self.channels[:channel_count]:
+            for video_json in channel.videos:
                 video_id = video_json["videoId"]
 
                 if video_id not in results:
                     response_json = get_video_info(video_json=video_json)
-                    results.update(
+                    results.update({
                         video_id: {
                             'video': {
                                 'title': get_video_title(video_json),
@@ -137,7 +140,9 @@ class SubScraper:
                                 'video_id': get_video_id(video_json),
                                 'view_count': get_view_count(video_json),
                                 'tags': get_video_tags(response_json),
-                                'category': get_video_category(response_json)
+                                'category': get_video_category(response_json),
+                                'thumbnail_objects': eden_ai.get_labels(image_url=get_video_thumbnail(response_json)['url'],
+                                                                        provider="amazon")
                             },
                             'channel': {
                                 'channel_id': get_channel_id(response_json),
@@ -146,7 +151,8 @@ class SubScraper:
                                                                                         channel_json=response_json)
                             }
                         }
-                    )
+                    }
+                )
 
                 video_cache = results[video_id]["video"]
                 channel_cache = results[video_id]["channel"]
@@ -170,7 +176,10 @@ class SubScraper:
                     break
 
                 videos.append(video)
-                print(channel_index, video_index)
+                print(index)
+
+                index += 1
+                
 
         with open("videos.json", "w") as f:
             json.dump(results, f, indent=4)
@@ -241,7 +250,7 @@ class Thumbnail:
 
 def main():
     subscraper = SubScraper()
-    subscraper.plot_results(max_days_old=100, channel_count=20, no_of_bins=5)
+    subscraper.plot_results(max_days_old=100, channel_count=20, no_of_bins=20)
 
 
 if __name__ == "__main__":

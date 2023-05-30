@@ -1,12 +1,12 @@
 import gensim.downloader as api
+import numpy as np
 
 model = api.load('word2vec-google-news-300')
-print("model loaded")
 
-for word in "These guys are hjlnsdfjgnvö in the world".split():
-    if word in model:
-        print(word, "is in the model")
-        print(model[word])
-    else:
-        print(word, "is not in the model")
-        print("*" * 100, "\n" * 10)
+def get_vector(word_list: list[str]):
+    lst = []
+    for word in word_list:
+        if word in model:
+            lst.append(model[word])
+
+    return np.mean(lst, axis=0) if lst else np.zeros(300)
