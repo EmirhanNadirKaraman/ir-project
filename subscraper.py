@@ -180,9 +180,8 @@ class SubScraper:
 
                 index += 1
                 
-
-        with open("videos.json", "w") as f:
-            json.dump(results, f, indent=4)
+                with open("videos.json", "w") as f:
+                    json.dump(results, f, indent=4)
 
         return videos
 

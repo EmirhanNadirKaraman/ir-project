@@ -37,7 +37,11 @@ def get_max_res_thumbnail(thumbnails: list[Thumbnail]) -> Thumbnail:
 def get_video_info(video_json: str) -> str:
     youtube = authenticate()
 
-    info = youtube.videos().list(part="snippet", id=video_json["videoId"]).execute()
+    try:
+        info = youtube.videos().list(part="snippet", id=video_json["videoId"]).execute()
+    except:
+        youtube = authenticate()
+        info = youtube.videos().list(part="snippet", id=video_json["videoId"]).execute()
 
     return info
 
