@@ -185,50 +185,6 @@ class SubScraper:
 
         return videos
 
-    def plot_results(
-        self, max_days_old: int, channel_count: int, no_of_bins: int
-    ) -> None:
-        videos = self.get_results(
-            max_days_old=max_days_old, channel_count=channel_count
-        )
-
-        views = []
-        channel_sub_counts = []
-
-        with open('videos.json', 'r') as f:
-            results = json.loads(f.read())
-
-        for video in videos:
-            result = results[video.video_id]
-
-            view_count = video.get_view_count()
-            channel_sub_count = video.get_subscriber_count_of_video_owner()
-
-            views.append(view_count)
-            channel_sub_counts.append(channel_sub_count)
-
-        subscriber_mean = sum(set(channel_sub_counts)) / len(channel_sub_counts)
-
-        normalized_views = [
-            view / self.normalize(sub_count, subscriber_mean)
-            for view, sub_count in zip(views, channel_sub_counts)
-        ]
-
-        plt.hist(normalized_views, bins=no_of_bins)
-        plt.xlabel("views")
-        plt.ylabel("frequency")
-        plt.title(f"Views of videos from the last {max_days_old} days")
-        plt.show()
-
-    def normalize(self, subscriber_count, mean):
-        # print(subscriber_count, tanh(subscriber_count))
-        # print(mean, tanh(mean))
-
-        result = math.log(subscriber_count + 2)
-        return result
-
-        # return tanh(subscriber_count) / tanh(mean) * 0.5
-
 
 class Thumbnail:
     def __init__(self, url, width, height):
@@ -249,8 +205,7 @@ class Thumbnail:
 
 def main():
     subscraper = SubScraper()
-    subscraper.plot_results(max_days_old=100, channel_count=20, no_of_bins=20)
-
+    subscraper.get_results(max_days_old=100, channel_count=20)
 
 if __name__ == "__main__":
     main()
