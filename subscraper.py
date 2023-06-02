@@ -1,16 +1,14 @@
 import json
 import os
 import scrapetube
+import eden_ai
 
 import matplotlib.pyplot as plt
 
 # pip install google-api-python-client
 
 from datetime import datetime, timezone
-import math
-
 from utils import *
-import eden_ai
 
 
 class Channel:
@@ -110,7 +108,7 @@ class SubScraper:
             for channel in json.loads(open(self.file_name).read())
         ]
 
-    def get_results(self, max_days_old: int, channel_count: int) -> list[Video]:
+    def get_results(self, max_days_old: int, channel_count: int = -1) -> list[Video]:
         videos = []
 
         # create results.json if it doesn't exist
@@ -122,6 +120,9 @@ class SubScraper:
             results = json.loads(f.read())
 
         index = 1
+
+        if channel_count == -1:
+            channel_count = len(self.channels)
 
         for channel in self.channels[:channel_count]:
             for video_json in channel.videos:
@@ -205,7 +206,11 @@ class Thumbnail:
 
 def main():
     subscraper = SubScraper()
-    subscraper.get_results(max_days_old=100, channel_count=20)
+    subscraper.get_results(max_days_old=100)
+
+    # this version can also be used to specify the number of channels to scrape
+    # subscraper.get_results(max_days_old=1, channel_count=20)
+    
 
 if __name__ == "__main__":
     main()

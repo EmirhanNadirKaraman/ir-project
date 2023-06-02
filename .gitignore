@@ -1,4 +1,4 @@
-ir_venv/
+final_venv/
 .idea/
 __pycache__/
 
